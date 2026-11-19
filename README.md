@@ -4,9 +4,12 @@ Site de uma página para as famílias agendarem a **Santa Ceia com a Família** 
 
 A página tem a barra preta com o logo Ello | AD Brás, o banner da campanha (horizontal no computador, vertical no celular) e o cartão da agenda. Depois de agendar, a pessoa vê o dia e o horário marcados e o aviso de que a equipe entra em contato em breve.
 
-No computador tudo cabe numa dobra só, sem cortar o banner:
-- O banner largo fica ancorado à esquerda e mostra a arte inteira, do cabelo ao "1 a 5 de dezembro".
+No computador tudo cabe numa dobra só:
+- O fundo da campanha ocupa a tela. Por cima, o recorte do pastor com o título e a agenda ficam lado a lado, centralizados.
+- O pastor ocupa a altura disponível e encolhe se a tela for estreita.
 - Em telas baixas (notebook, abaixo de ~785px de altura), a agenda mantém o mesmo desenho e espaçamento e diminui por inteiro (zoom), o quanto precisar para caber.
+
+No tablet e no celular continua o banner inteiro em cima, com a agenda embaixo.
 
 - **Datas:** 1 a 5 de dezembro de 2026.
 - **Horários liberados na planilha:** de 20 em 20 minutos.
@@ -76,10 +79,12 @@ python -m http.server 5173
 ## Créditos
 
 - **Banners:** arte da campanha (`banner-desktop.webp` 1920×1080, usado no tablet, e `banner-mobile.webp` 840×2000). A imagem de compartilhamento (`og-santa-ceia.jpg`) é o banner horizontal recortado em 1200×630.
-- **Banner largo do computador** (`banner-desktop-largo.webp`, 2880×1080):
-  - É o banner horizontal com o lado direito estendido em 960px no Gemini, para não cortar em telas largas.
-  - Conversa "Expansão horizontal de banner" (https://gemini.google.com/app/5c4eef646eeb6c64), versão 1, gerada em 19/11/2026.
-  - Foi enviada a metade direita do banner com a área vazia ao lado. O arquivo bruto está em `geradas/banner-santa-ceia-extensao-direita-gemini-v1.jpg`, fora do repositório.
-  - O pastor e os textos são o arquivo original, sem alteração: a extensão foi colada ao lado com uma emenda suave de 220px.
+- **Camadas do computador**, enviadas separadas pela equipe:
+  - `fundo-desktop.webp` (1920×1080): só o fundo, sem texto.
+  - `heroi-santa-ceia.webp` (876×1159, com transparência): pastor, título, subtítulo e "1 a 5 de dezembro".
+  - Existe também um fundo vertical para o celular; ele ainda não é usado, porque o celular continua com o banner inteiro.
+- **Versão anterior:** o banner horizontal foi estendido para a direita no Gemini e depois substituído pelas camadas.
+  - Conversa "Expansão horizontal de banner" (https://gemini.google.com/app/5c4eef646eeb6c64), versão 1, de 19/11/2026.
+  - O arquivo bruto continua em `geradas/banner-santa-ceia-extensao-direita-gemini-v1.jpg`, fora do repositório.
 - **Fontes:** Anton e Raleway, licença SIL OFL 1.1 (`assets/fonts/LICENSE-OFL.txt`).
   - A ID visual usa **Tusker Grotesk** nos títulos, mas ela é paga e não tem licença para web; a Anton é a substituta.
