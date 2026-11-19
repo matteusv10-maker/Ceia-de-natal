@@ -39,9 +39,12 @@ body {
   background: var(--bg);
   color: var(--ink);
   font: 400 16px/1.5 var(--f-body);
+  font-variant-numeric: lining-nums;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+input, select, button { font-variant-numeric: lining-nums; }
+.cal__dias, .horas__grid { font-variant-numeric: lining-nums tabular-nums; }
 img, svg { display: block; }
 a { color: inherit; }
 [hidden] { display: none !important; }
@@ -163,7 +166,7 @@ label, legend {
 }
 input, select {
   width: 100%;
-  height: 48px;
+  height: 46px;
   padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -184,8 +187,82 @@ input:focus-visible, select:focus-visible { border-color: var(--laranja); backgr
 [aria-invalid="true"] { border-color: var(--erro); }
 .field__err { margin: 0; font-size: 13px; font-weight: 600; color: var(--erro); }
 
-.row--quando { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); margin-bottom: 6px; }
-select:disabled { opacity: .5; cursor: not-allowed; }
+/* calendário + horários (estilo agendamento da Apple) */
+.quando {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  margin: 0 0 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .03);
+}
+.cal__mes { margin: 0 0 8px 4px; font-size: 16px; font-weight: 700; letter-spacing: .01em; color: var(--ink); }
+.cal__mes b { font-weight: 500; color: var(--ink-3); }
+.cal__semana, .cal__dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); justify-items: center; }
+.cal__semana { margin-bottom: 4px; }
+.cal__semana span { font-size: 10px; font-weight: 700; letter-spacing: .06em; color: var(--ink-3); }
+.cal__dias { row-gap: 2px; }
+.cal__dia {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgba(246, 241, 236, .26);
+  user-select: none;
+}
+label.cal__dia { cursor: pointer; color: #ffb27a; font-weight: 800; background: rgba(255, 80, 16, .14); transition: background-color .18s, color .18s, transform .18s, box-shadow .18s; }
+label.cal__dia:hover { background: rgba(255, 80, 16, .26); }
+.cal__dia input, .hora input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+label.cal__dia:has(input:checked), label.cal__dia.is-on { background: var(--grad-btn); color: #fff; box-shadow: 0 8px 20px rgba(255, 80, 16, .4); }
+label.cal__dia:has(input:focus-visible), .hora:has(input:focus-visible) { outline: 2px solid var(--amarelo); outline-offset: 2px; }
+label.cal__dia.is-cheio { background: transparent; color: rgba(246, 241, 236, .3); text-decoration: line-through; cursor: not-allowed; }
+
+.horas { min-width: 0; }
+.horas__titulo { margin: 0 0 8px 2px; font-size: 16px; font-weight: 700; color: var(--ink); }
+.horas__titulo small { display: block; margin-top: 1px; font-size: 12.5px; font-weight: 600; color: var(--amarelo); }
+.horas__vazio { margin: 0; padding: 14px; border: 1px dashed var(--line-2); border-radius: 12px; font-size: 14px; line-height: 1.4; color: var(--ink-3); text-align: center; }
+.horas__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.hora {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--field);
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color .18s, border-color .18s, box-shadow .18s;
+}
+.hora:hover { background: var(--field-2); border-color: var(--line-2); }
+.hora:has(input:checked), .hora.is-on { border-color: transparent; background: var(--grad-btn); color: #fff; box-shadow: 0 8px 20px rgba(255, 80, 16, .35); }
+.hora.is-cheio { color: var(--ink-3); background: transparent; text-decoration: line-through; cursor: not-allowed; opacity: .55; }
+.hora.is-cheio input { cursor: not-allowed; }
+.resumo { margin: 0 0 10px; font-size: 13.5px; color: var(--ink-2); text-align: center; }
+.resumo b { color: var(--ink); font-weight: 700; }
+
+@media (min-width: 1200px) {
+  .quando { grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: start; }
+  .horas { padding-left: 18px; border-left: 1px solid var(--line); min-height: 100%; }
+  .horas__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .horas__vazio { padding: 22px 12px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .horas__grid:not([hidden]) { animation: entra .28s ease-out both; }
+  @keyframes entra { from { transform: translateY(6px); } to { transform: none; } }
+}
 
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
@@ -198,7 +275,7 @@ select:disabled { opacity: .5; cursor: not-allowed; }
   justify-content: center;
   gap: 10px;
   width: 100%;
-  min-height: 56px;
+  min-height: 52px;
   padding: 0 18px;
   border: 0;
   border-radius: 14px;
@@ -277,7 +354,8 @@ select:disabled { opacity: .5; cursor: not-allowed; }
   .facts__v { font-size: 15.5px; }
   .card { padding: 18px 16px 20px; border-radius: 18px; }
   .row { grid-template-columns: minmax(0, 1fr) 120px; gap: 10px; }
-  .row--quando { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+  .quando { padding: 12px 10px; }
+  .cal__dia { width: 38px; height: 38px; }
   .ok__acoes { grid-template-columns: 1fr; }
   .foot { justify-content: center; text-align: center; }
 }

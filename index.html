@@ -115,22 +115,21 @@
           </div>
         </div>
 
-        <div class="row row--quando">
-          <div class="field">
-            <label for="dia">Dia</label>
-            <select id="dia" name="dia" required aria-describedby="dia-erro">
-              <option value="" selected disabled>Escolha o dia</option>
-            </select>
-            <p class="field__err" id="dia-erro" hidden>Escolha o dia.</p>
+        <div class="quando">
+          <div class="cal" role="radiogroup" aria-labelledby="cal-mes" aria-describedby="dia-erro">
+            <p class="cal__mes" id="cal-mes" data-cal-mes>Dezembro</p>
+            <div class="cal__semana" aria-hidden="true"><span>DOM</span><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span></div>
+            <div class="cal__dias" data-cal></div>
+            <p class="field__err" id="dia-erro" hidden>Escolha o dia no calendário.</p>
           </div>
-          <div class="field">
-            <label for="hora">Horário</label>
-            <select id="hora" name="hora" required disabled aria-describedby="hora-erro">
-              <option value="" selected disabled>Escolha</option>
-            </select>
+          <div class="horas" role="radiogroup" aria-labelledby="horas-titulo" aria-describedby="hora-erro">
+            <p class="horas__titulo" id="horas-titulo" data-horas-titulo>Horário</p>
+            <p class="horas__vazio" data-horas-vazio>Toque em um dia do calendário para ver os horários.</p>
+            <div class="horas__grid" data-horas hidden></div>
             <p class="field__err" id="hora-erro" hidden>Escolha o horário.</p>
           </div>
         </div>
+        <p class="resumo" data-resumo hidden></p>
 
         <div class="hp" aria-hidden="true">
           <label for="site">Não preencha</label>
