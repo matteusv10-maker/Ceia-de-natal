@@ -59,7 +59,18 @@ Para ligar de novo do zero (outra planilha, por exemplo):
 
 Se alterar o script: **Implantar → Gerenciar implantações →** lápis → **Versão: Nova versão → Implantar**. A URL continua a mesma.
 
-## 3. Publicação
+## 3. SEO e compartilhamento
+
+O topo do `index.html` tem:
+- título e descrição;
+- tags de compartilhamento para WhatsApp, Instagram, Facebook e X, com a imagem `og-santa-ceia.jpg`;
+- dados estruturados do evento (JSON-LD: nome, datas de 1 a 5 de dezembro e local).
+
+Na raiz do site ficam o `robots.txt` e o `sitemap.xml`.
+
+O local do evento está só com a cidade (São Paulo, SP). Para o Google mostrar o endereço completo, coloque a rua, o número e o CEP da sede em `location.address`, no bloco JSON-LD.
+
+## 4. Publicação
 
 Cada `git push` na `main` atualiza o site (GitHub Pages: *Deploy from a branch* → `main` / raiz).
 
@@ -78,7 +89,11 @@ python -m http.server 5173
 
 ## Créditos
 
-- **Banners:** arte da campanha (`banner-desktop.webp` 1920×1080, usado no tablet, e `banner-mobile.webp` 840×2000). A imagem de compartilhamento (`og-santa-ceia.jpg`) é o banner horizontal recortado em 1200×630.
+- **Banners:** arte da campanha (`banner-desktop.webp` 1920×1080, usado no tablet, e `banner-mobile.webp` 840×2000). A imagem de compartilhamento (`og-santa-ceia.jpg`, 1200×630) junta:
+  - o fundo e o recorte do pastor;
+  - um cartão igual ao do site, com o logo, "Agende a ceia da sua família" (Tusker Grotesk) e o botão elloeterno.com.br.
+  
+  Ao trocar essa imagem, mude o `?v=` dela nas tags do `index.html`, para o WhatsApp e as redes buscarem a nova.
 - **Camadas do computador**, enviadas separadas pela equipe:
   - `fundo-desktop.webp` (1920×1080): só o fundo, sem texto.
   - `heroi-santa-ceia.webp` (876×1159, com transparência): pastor, título, subtítulo e "1 a 5 de dezembro".

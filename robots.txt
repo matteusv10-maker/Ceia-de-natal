@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /integracoes/
+Disallow: /README.md
+
+Sitemap: https://elloeterno.com.br/sitemap.xml
