@@ -78,7 +78,9 @@ a { color: inherit; }
     padding: 24px clamp(28px, 5.5vw, 110px);
   }
   .banner { position: absolute; inset: 0; overflow: hidden; }
-  .banner img { width: 100%; height: 100%; object-fit: cover; object-position: 18% 50%; }
+  /* banner largo (2880×1080): o lado direito foi estendido para ficar atrás da agenda. Ancorado à esquerda,
+     mostra a altura inteira, do cabelo ao "1 a 5 de dezembro", em telas de até 2,67:1 */
+  .banner img { width: 100%; height: 100%; object-fit: cover; object-position: 0 42%; }
   .booking { width: min(540px, 42vw); }
 }
 
@@ -275,10 +277,49 @@ label.cal__dia.is-cheio { background: transparent; color: rgba(251, 244, 234, .3
   .horas { padding: 0 6px; }
   .hora { height: 44px; font-size: 15.5px; }
 }
-@media (max-height: 720px) and (min-width: 1100px) {
+/* computador com tela baixa (notebook): agenda compacta para caber numa dobra só, sem cortar o banner.
+   Nome, WhatsApp e pessoas ficam numa linha só, e as semanas sem evento ficam mais baixas. */
+@media (min-width: 1100px) and (max-height: 820px) {
+  .palco { padding-top: 16px; padding-bottom: 16px; }
+  .booking { width: clamp(480px, 42vw, 540px); }
+  .card { padding: 22px 24px; }
+  .card__title { font-size: 30px; margin-bottom: 14px; }
   .card__sub { display: none; }
-  input, select { height: 44px; }
-  .cal__dia { width: 33px; height: 33px; }
-  .hora { height: 36px; }
+  .dados { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 104px; gap: 8px; margin-bottom: 12px; }
+  .dados .row { display: contents; }
+  .dados .field { margin-bottom: 0; gap: 5px; }
+  label { font-size: 11.5px; }
+  input, select { height: 42px; font-size: 14.5px; }
+  input { padding: 0 12px; }
+  select { padding: 0 26px 0 11px; background-position: right 10px center; }
+  .quando { padding: 10px; margin-bottom: 10px; }
+  .cal__mes, .horas__titulo { margin-bottom: 6px; font-size: 15px; }
+  .horas__titulo small { display: none; }   /* o dia escolhido já aparece marcado no calendário e no resumo */
+  .cal__semana span { font-size: 10px; }
+  label.cal__dia { width: 34px; height: 34px; }
+  span.cal__dia { height: 26px; font-size: 14px; }   /* semanas sem evento mais baixas */
+  .horas__grid { gap: 6px; }
+  .hora { height: 34px; font-size: 14.5px; }
+  .resumo { margin-bottom: 8px; font-size: 13.5px; }
   .btn { min-height: 50px; }
+}
+/* telas ainda mais baixas: a agenda inteira diminui na mesma proporção (cartão completo tem ~475px) */
+@media (min-width: 1100px) and (max-height: 600px) { .palco { padding-top: 12px; padding-bottom: 12px; } }
+@media (min-width: 1100px) and (max-height: 560px) { .booking { zoom: .95; } }
+@media (min-width: 1100px) and (max-height: 537px) { .booking { zoom: .9; } }
+@media (min-width: 1100px) and (max-height: 513px) { .booking { zoom: .85; } }
+@media (min-width: 1100px) and (max-height: 489px) { .booking { zoom: .8; } }
+/* computador com tela mais quadrada (ex.: iPad deitado): o banner anda um pouco para a esquerda e não encosta na agenda */
+@media (min-width: 1100px) and (max-aspect-ratio: 3/2) {
+  .banner img { object-position: -4vw 42%; }
+}
+/* computador estreito (1100 a 1259px): a agenda ganha largura para a direita (a borda esquerda não muda)
+   e o calendário fica um pouco mais estreito, para os horários caberem em 3 colunas */
+@media (min-width: 1100px) and (max-width: 1259px) {
+  .palco { padding-right: 28px; }
+  .booking { width: calc(42vw + 32px); }
+  .quando { gap: 12px; }
+  .horas { padding-left: 12px; }
+  label.cal__dia, span.cal__dia { width: 31px; }
+  label.cal__dia { height: 31px; }
 }

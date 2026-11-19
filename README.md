@@ -4,6 +4,11 @@ Site de uma página para as famílias agendarem a **Santa Ceia com a Família** 
 
 A página tem a barra preta com o logo Ello | AD Brás, o banner da campanha (horizontal no computador, vertical no celular) e o cartão da agenda. Depois de agendar, a pessoa vê o dia e o horário marcados e o aviso de que a equipe entra em contato em breve.
 
+No computador tudo cabe numa dobra só, sem cortar o banner:
+- O banner largo fica ancorado à esquerda e mostra a arte inteira, do cabelo ao "1 a 5 de dezembro".
+- Em telas baixas (notebook, até 820px de altura), a agenda fica compacta: nome, WhatsApp e pessoas numa linha só.
+- Abaixo de 560px de altura, a agenda inteira diminui na mesma proporção.
+
 - **Datas:** 1 a 5 de dezembro de 2026.
 - **Horários liberados na planilha:** de 20 em 20 minutos.
   - Terça a sexta: 19h às 22h. O das 22h só existe nas salas 03 a 11.
@@ -71,6 +76,11 @@ python -m http.server 5173
 
 ## Créditos
 
-- **Banners:** arte da campanha (`banner-desktop.webp` 1920×1080 e `banner-mobile.webp` 840×2000). A imagem de compartilhamento (`og-santa-ceia.jpg`) é o banner horizontal recortado em 1200×630.
+- **Banners:** arte da campanha (`banner-desktop.webp` 1920×1080, usado no tablet, e `banner-mobile.webp` 840×2000). A imagem de compartilhamento (`og-santa-ceia.jpg`) é o banner horizontal recortado em 1200×630.
+- **Banner largo do computador** (`banner-desktop-largo.webp`, 2880×1080):
+  - É o banner horizontal com o lado direito estendido em 960px no Gemini, para não cortar em telas largas.
+  - Conversa "Expansão horizontal de banner" (https://gemini.google.com/app/5c4eef646eeb6c64), versão 1, gerada em 19/11/2026.
+  - Foi enviada a metade direita do banner com a área vazia ao lado. O arquivo bruto está em `geradas/banner-santa-ceia-extensao-direita-gemini-v1.jpg`, fora do repositório.
+  - O pastor e os textos são o arquivo original, sem alteração: a extensão foi colada ao lado com uma emenda suave de 220px.
 - **Fontes:** Anton e Raleway, licença SIL OFL 1.1 (`assets/fonts/LICENSE-OFL.txt`).
   - A ID visual usa **Tusker Grotesk** nos títulos, mas ela é paga e não tem licença para web; a Anton é a substituta.

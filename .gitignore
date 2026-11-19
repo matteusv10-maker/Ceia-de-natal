@@ -2,3 +2,6 @@
 .claude/
 Thumbs.db
 .DS_Store
+
+# imagens brutas geradas no Gemini (a versão usada no site fica em assets/img)
+geradas/
