@@ -114,6 +114,13 @@ a { color: inherit; }
   font: italic 700 clamp(32px, 4vw, 62px)/1.05 var(--f-script);
   color: var(--ink);
 }
+.subtitle {
+  max-width: 30ch;
+  margin: clamp(12px, 2vh, 18px) 0 0;
+  font: 500 clamp(18px, 1.55vw, 23px)/1.35 var(--f-body);
+  color: var(--ink-2);
+  text-wrap: balance;
+}
 .verse { margin: clamp(16px, 2.6vh, 26px) 0 0; padding-left: 14px; border-left: 2px solid var(--laranja); }
 .verse p { margin: 0; font: italic 600 clamp(16px, 1.25vw, 19px)/1.4 var(--f-script); color: var(--ink); }
 .verse cite { display: block; margin-top: 2px; font-style: normal; font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); }
