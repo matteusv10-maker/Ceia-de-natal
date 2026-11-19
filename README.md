@@ -1,6 +1,8 @@
-# Santa Ceia da Família · elloeterno.com.br
+# Santa Ceia com a Família · elloeterno.com.br
 
-Site de uma página para as famílias agendarem a **Santa Ceia da Família** na AD Brás (Ello Eterno).
+Site de uma página para as famílias agendarem a **Santa Ceia com a Família** na AD Brás (Ello Eterno).
+
+A página tem a barra preta com o logo Ello | AD Brás, o banner da campanha (horizontal no computador, vertical no celular) e o cartão da agenda. Depois de agendar, a pessoa vê o dia e o horário marcados e o aviso de que a equipe entra em contato em breve.
 
 - **Datas:** 1 a 5 de dezembro de 2026.
 - **Horários liberados na planilha:** de 20 em 20 minutos.
@@ -22,11 +24,11 @@ O site é estático (HTML, CSS e JS, sem build) e é publicado pelo GitHub Pages
 
 ```
 index.html                  página + CONFIGURAÇÃO (window.CEIA, no topo do arquivo)
-assets/css/style.css        visual (ID do Ello, versão laranja)
-assets/js/main.js           dias, horários, vagas, envio e confirmação
-assets/img/                 fundo (foto da ceia desfocada), logo, ícones e imagem de compartilhamento
-assets/fonts/               Anton, Raleway e Playfair Display (licença OFL)
-integracoes/santa-ceia.gs   Apps Script da planilha da agenda (recebe os agendamentos)
+assets/css/style.css        visual (barra preta, banner e cartão da agenda)
+assets/js/main.js           calendário, horários, envio e confirmação
+assets/img/                 banners (computador e celular), logo, ícones e imagem de compartilhamento
+assets/fonts/               Anton e Raleway (licença OFL)
+integracoes/santa-ceia.gs   Apps Script da planilha dos resultados (recebe os agendamentos)
 CNAME                       domínio elloeterno.com.br
 ```
 
@@ -38,21 +40,27 @@ Tudo fica no bloco `window.CEIA`, no topo do `index.html`:
 |---|---|
 | `planilhaEndpoint` | URL `/exec` do Apps Script da planilha da agenda. Vazio: o formulário não envia e avisa que o agendamento abre em instantes |
 | `dias` | Um item por dia, com data, nome do dia e os horários liberados (iguais aos da planilha) |
-| `duracaoMin` | Duração de cada horário (20) |
-| `local`, `endereco`, `mapsLink` | Local mostrado na página, na confirmação e na agenda |
 
-## 2. Planilha da agenda (Apps Script)
+## 2. Planilha dos resultados (Apps Script)
 
-Os agendamentos vão direto para a planilha **ADBRÁS SEDE - AGENDA - SANTA CEIA DA FAMÍLIA**.
+Os agendamentos vão para a planilha **Ceia - Natal 2026**: https://docs.google.com/spreadsheets/d/1hIeWo5zZPacSsMYuxGCj9LpRy6RbJsFIrjsrriclG1c
 
-- **Onde grava:** a primeira sala livre daquele dia e horário recebe o nome, as pessoas e o telefone, no mesmo formato da agenda. A célula ganha a nota "Agendado pelo site em ...".
-- **Registro:** a aba **Agendamentos do site** guarda tudo, com um link para abrir a conversa no WhatsApp.
-- **Duas pessoas ao mesmo tempo no último lugar:** a segunda recebe "esse horário acabou de lotar" e escolhe outro.
-- **O que já está na agenda:** as reservas feitas à mão ficam como estão. Uma célula só conta como livre quando tem só o modelo "Nome Tel:"; vazia = horário fechado.
+Ela espelha a agenda oficial (**ADBRÁS SEDE - AGENDA - SANTA CEIA DA FAMÍLIA**), no visual do Ello:
 
-Para ligar, uma vez só:
+- **Agendamentos:** a lista de tudo, em ordem de dia e horário, com sala, nome, pessoas, WhatsApp (link "Abrir conversa") e o **texto pronto para colar na agenda**.
+- **SALA 01 a SALA 11:** as mesmas linhas e colunas da agenda.
+  - O site grava cada família na primeira sala livre do dia e horário, no formato da agenda ("Nome  - 2 Pessoas … Tel: 11 91234-5678").
+  - A célula preenchida pelo site fica laranja clara e ganha a nota "Agendado pelo site em ...".
+  - As 9 reservas que já estavam na agenda foram copiadas para cá.
 
-1. Abra a planilha no Google Planilhas → **Extensões → Apps Script**.
+**Para passar para a agenda oficial:** copie o intervalo `C5:H16` de uma sala e cole no mesmo lugar da sala correspondente na agenda com **Ctrl+Shift+V** (só os valores, sem trazer as cores).
+
+- Como as reservas antigas também estão aqui, colar o intervalo não apaga nenhuma delas.
+- Reserva feita à mão daqui para frente: faça também nesta planilha, senão a próxima colagem apaga.
+
+Para ligar o script, uma vez só:
+
+1. Abra a planilha **Ceia - Natal 2026** → **Extensões → Apps Script**.
 2. Apague o código de exemplo, cole o conteúdo de `integracoes/santa-ceia.gs` e salve.
 3. **Implantar → Nova implantação →** engrenagem → **App da Web**.
    - Executar como: **Eu**
@@ -84,7 +92,6 @@ python -m http.server 5173
 
 ## Créditos
 
-- **Foto de fundo:** pão e cálice, por [jhc no Unsplash](https://unsplash.com/photos/_HzRfyw7BuA) (licença Unsplash, uso livre).
-- **Fontes:** Anton, Raleway e Playfair Display, licença SIL OFL 1.1 (`assets/fonts/LICENSE-OFL.txt`).
+- **Banners:** arte da campanha (`banner-desktop.webp` 1920×1080 e `banner-mobile.webp` 840×2000). A imagem de compartilhamento (`og-santa-ceia.jpg`) é o banner horizontal recortado em 1200×630.
+- **Fontes:** Anton e Raleway, licença SIL OFL 1.1 (`assets/fonts/LICENSE-OFL.txt`).
   - A ID visual usa **Tusker Grotesk** nos títulos, mas ela é paga e não tem licença para web; a Anton é a substituta.
-  - A imagem de compartilhamento (`og-santa-ceia.jpg`) é uma imagem estática e usa a Tusker original.

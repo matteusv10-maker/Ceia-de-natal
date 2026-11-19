@@ -1,14 +1,13 @@
-/* Santa Ceia da Família · agendamento (elloeterno.com.br)
+/* Santa Ceia com a Família · agendamento (elloeterno.com.br)
    - calendário do mês com os dias do evento destacados; ao tocar no dia aparecem os horários daquele dia
-     (de 20 em 20 minutos, a partir de window.CEIA no topo do index.html)
-   - envia o agendamento para a planilha da agenda (Apps Script) e mostra a confirmação com a sala
-   - horário que já lotou na planilha (11 famílias) aparece riscado e não pode ser escolhido */
+     (os liberados na planilha da agenda; enquanto ela não responde, a lista do topo do index.html)
+   - envia o agendamento para a planilha (Apps Script) e confirma: "entraremos em contato em breve"
+   - horário que já lotou na planilha (todas as salas ocupadas) aparece riscado e não pode ser escolhido */
 (() => {
   "use strict";
 
   const C = window.CEIA || {};
   const $ = (s, el = document) => el.querySelector(s);
-  const DUR = Number(C.duracaoMin) || 20;
   const endpoint = String(C.planilhaEndpoint || "").trim();
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
@@ -38,13 +37,6 @@
   const submitBtn = $("[data-submit]");
   const submitLabel = $("[data-submit-label]");
   const ok = $("[data-ok]");
-
-  const maps = $("[data-maps]");
-  if (maps) {
-    if (C.mapsLink) maps.href = C.mapsLink;
-    else maps.removeAttribute("href");
-    if (C.local) maps.textContent = C.local;
-  }
 
   // ---------- calendário ----------
   const montarCalendario = () => {
@@ -288,7 +280,7 @@
     const d = diaAtual();
     const h = horaAtual();
     const primeiroNome = nome.value.trim().split(/\s+/)[0];
-    if (form.site.value) { mostrarOk({ primeiroNome, data: d.data, hora: h, sala: "" }); return; } // robô
+    if (form.site.value) { mostrarOk({ primeiroNome, data: d.data, hora: h }); return; } // robô
 
     if (!endpoint) {
       mostrarStatus("O agendamento abre em instantes. Tente de novo daqui a pouco.", true);
@@ -322,7 +314,7 @@
       const j = await res.json().catch(() => null);
       if (!j) throw new Error("sem resposta");
       if (j.ok) {
-        mostrarOk({ primeiroNome, data: j.data || d.data, hora: j.hora || h, sala: j.sala || "" });
+        mostrarOk({ primeiroNome, data: j.data || d.data, hora: j.hora || h });
         idEnvio = novoId();
         return;
       }
@@ -354,71 +346,15 @@
   });
 
   // ---------- confirmação ----------
-  const z = (dt) => dt.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-
-  function mostrarOk({ primeiroNome, data, hora, sala }) {
+  function mostrarOk({ primeiroNome, data, hora }) {
     const d = DIAS.find((x) => x.data === data) || diaAtual();
-    const ini = new Date(`${data}T${hora}:00-03:00`);
-    const fim = new Date(ini.getTime() + DUR * 60000);
-    const quando = `${d.semana}, ${diaMes(data)} · ${rotuloHora(hora)}`;
-    const salaTxt = sala ? `Sala ${String(sala).replace(/^sala\s*/i, "")}` : "";
-    const onde = [C.local, C.endereco].filter(Boolean).join(" · ");
-
-    $("[data-ok-nome]").textContent = primeiroNome ? `, ${primeiroNome}` : "";
-    $("[data-ok-quando]").textContent = quando;
-    const salaEl = $("[data-ok-sala]");
-    salaEl.textContent = salaTxt;
-    salaEl.hidden = !salaTxt;
-    $("[data-ok-local]").textContent = onde;
-
-    const titulo = `${C.evento || "Santa Ceia da Família"} · AD Brás`;
-    const detalhes = `${C.evento || "Santa Ceia da Família"}${salaTxt ? ` (${salaTxt})` : ""}. ${C.siteUrl || ""}`;
-    const gcal = new URL("https://calendar.google.com/calendar/render");
-    gcal.searchParams.set("action", "TEMPLATE");
-    gcal.searchParams.set("text", titulo);
-    gcal.searchParams.set("dates", `${z(ini)}/${z(fim)}`);
-    gcal.searchParams.set("location", onde);
-    gcal.searchParams.set("details", detalhes);
-    $("[data-ok-gcal]").href = gcal.toString();
-
-    const icsTxt = [
-      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Ello Eterno//Santa Ceia//PT-BR", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
-      "BEGIN:VEVENT",
-      `UID:${idEnvio}@elloeterno.com.br`,
-      `DTSTAMP:${z(new Date())}`,
-      `DTSTART:${z(ini)}`,
-      `DTEND:${z(fim)}`,
-      `SUMMARY:${titulo.replace(/[,;]/g, "\\$&")}`,
-      `LOCATION:${onde.replace(/[,;]/g, "\\$&")}`,
-      `DESCRIPTION:${detalhes.replace(/[,;]/g, "\\$&")}`,
-      "BEGIN:VALARM", "TRIGGER:-PT2H", "ACTION:DISPLAY", "DESCRIPTION:Santa Ceia da Família", "END:VALARM",
-      "END:VEVENT", "END:VCALENDAR",
-    ].join("\r\n");
-    const ics = $("[data-ok-ics]");
-    if (ics.dataset.url) URL.revokeObjectURL(ics.dataset.url);
-    ics.dataset.url = URL.createObjectURL(new Blob([icsTxt], { type: "text/calendar;charset=utf-8" }));
-    ics.href = ics.dataset.url;
-
-    const texto = `Nossa família vai participar da ${C.evento || "Santa Ceia da Família"} na AD Brás: ${d.semana.toLowerCase()}, ${diaMes(data)}, às ${rotuloHora(hora)}${salaTxt ? ` (${salaTxt.toLowerCase()})` : ""}. Agende a sua família também: ${C.siteUrl || location.href.split("#")[0]}`;
-    $("[data-ok-share]").href = `https://wa.me/?text=${encodeURIComponent(texto)}`;
-
+    $("[data-ok-nome]").textContent = primeiroNome ? `${primeiroNome}, s` : "S";
+    $("[data-ok-quando]").textContent = `${d.semana}, ${diaExtenso(data)} · ${rotuloHora(hora)}`;
     form.hidden = true;
     ok.hidden = false;
     ok.focus({ preventScroll: true });
     ok.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
   }
-
-  $("[data-ok-again]").addEventListener("click", () => {
-    form.reset();
-    [nome, whats, pessoas].forEach((el) => el.setAttribute("aria-invalid", "false"));
-    marcarSelecionados();
-    renderHoras();
-    statusEl.hidden = true;
-    ok.hidden = true;
-    form.hidden = false;
-    nome.focus();
-    lerPlanilha(true);
-  });
 
   renderHoras();
   lerPlanilha(true);

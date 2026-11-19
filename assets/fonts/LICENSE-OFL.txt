@@ -2,7 +2,6 @@ Fontes usadas no site, todas sob a SIL Open Font License 1.1 (texto completo aba
 
 - Anton: Copyright 2020 The Anton Project Authors (https://github.com/googlefonts/AntonFont)
 - Raleway: Copyright 2010 The Raleway Project Authors (impallari@gmail.com), with Reserved Font Name "Raleway"
-- Playfair Display: Copyright 2005-2023 The Playfair Project Authors (https://github.com/clauseggers/Playfair)
 
 -----------------------------------------------------------
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007

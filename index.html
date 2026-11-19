@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Santa Ceia da Família · 1 a 5 de dezembro · Ello Eterno | AD Brás</title>
+  <title>Santa Ceia com a Família · 1 a 5 de dezembro · Ello Eterno | AD Brás</title>
   <meta name="description" content="Um momento particular para você cear com a sua família na AD Brás. De 1 a 5 de dezembro: escolha o dia e o horário da sua família.">
-  <meta name="theme-color" content="#0d0a09">
+  <meta name="theme-color" content="#000000">
   <link rel="canonical" href="https://elloeterno.com.br/">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_BR">
   <meta property="og:site_name" content="Ello Eterno · AD Brás">
-  <meta property="og:title" content="Santa Ceia da Família · 1 a 5 de dezembro">
+  <meta property="og:title" content="Santa Ceia com a Família · 1 a 5 de dezembro">
   <meta property="og:description" content="Um momento particular para você cear com a sua família na AD Brás. Escolha o dia e o horário.">
   <meta property="og:url" content="https://elloeterno.com.br/">
   <meta property="og:image" content="https://elloeterno.com.br/assets/img/og-santa-ceia.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Santa Ceia da Família, de 1 a 5 de dezembro, Ello Eterno e AD Brás">
+  <meta property="og:image:alt" content="Santa Ceia com a Família, de 1 a 5 de dezembro, na AD Brás">
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
@@ -26,8 +26,8 @@
 
   <link rel="preload" href="assets/fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/raleway.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" as="image" href="assets/img/fundo-mobile.webp" media="(max-width: 767px)">
-  <link rel="preload" as="image" href="assets/img/fundo-desktop.webp" media="(min-width: 768px)">
+  <link rel="preload" as="image" href="assets/img/banner-mobile.webp" media="(max-width: 599px)">
+  <link rel="preload" as="image" href="assets/img/banner-desktop.webp" media="(min-width: 600px)">
   <link rel="stylesheet" href="assets/css/style.css">
 
   <script>
@@ -39,12 +39,7 @@
                  aparece ou some aqui sozinho. Esta lista só vale enquanto a planilha não responde. */
     window.CEIA = {
       planilhaEndpoint: "",
-      duracaoMin: 20,
-      evento: "Santa Ceia da Família",
-      local: "AD Brás · Sede",
-      endereco: "Av. Celso Garcia, 560 · Brás, São Paulo",
-      mapsLink: "https://www.google.com/maps/search/?api=1&query=AD+Br%C3%A1s+Av.+Celso+Garcia+560+S%C3%A3o+Paulo",
-      siteUrl: "https://elloeterno.com.br/",
+      evento: "Santa Ceia com a Família",
       dias: [
         { data: "2026-12-01", semana: "Terça",  horarios: "19:00 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00" },
         { data: "2026-12-02", semana: "Quarta", horarios: "19:00 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00" },
@@ -56,38 +51,18 @@
   </script>
 </head>
 <body>
-  <div class="bg" aria-hidden="true">
-    <picture>
-      <source media="(max-width: 767px)" srcset="assets/img/fundo-mobile.webp">
-      <source media="(max-width: 1366px)" srcset="assets/img/fundo-desktop-1280.webp">
-      <img src="assets/img/fundo-desktop.webp" alt="" width="1920" height="1080" decoding="async" fetchpriority="high">
+  <header class="barra">
+    <img class="barra__logo" src="assets/img/ello-adbras.svg" alt="Ello Eterno · AD Brás" width="1204" height="373">
+  </header>
+
+  <main class="palco">
+    <h1 class="sr-only">Santa Ceia com a Família</h1>
+    <p class="sr-only">Um momento particular para você cear com a sua família na AD Brás, de 1 a 5 de dezembro.</p>
+
+    <picture class="banner">
+      <source media="(max-width: 599px)" srcset="assets/img/banner-mobile.webp" width="840" height="2000">
+      <img src="assets/img/banner-desktop.webp" alt="" width="1920" height="1080" decoding="async" fetchpriority="high">
     </picture>
-  </div>
-
-  <div class="page">
-    <header class="top">
-      <img class="lockup" src="assets/img/ello-adbras.svg" alt="Ello Eterno · AD Brás" width="1204" height="373">
-      <span class="top__tag">Dezembro · 2026</span>
-    </header>
-
-    <main class="hero" aria-labelledby="titulo">
-      <p class="kicker">Ello Eterno · AD Brás</p>
-      <h1 id="titulo" class="title">
-        <span class="title__big">Santa Ceia</span>
-        <span class="title__script">da Família</span>
-      </h1>
-      <h2 class="subtitle">Um momento particular para você cear com a sua família na AD Brás.</h2>
-      <blockquote class="verse">
-        <p>“Fazei isto em memória de mim.”</p>
-        <cite>Lucas 22:19</cite>
-      </blockquote>
-      <ul class="facts">
-        <li><span class="facts__k">Quando</span><span class="facts__v">1 a 5 de dezembro</span></li>
-        <li><span class="facts__k">Terça a sexta</span><span class="facts__v">19h às 22h</span></li>
-        <li><span class="facts__k">Sábado, 5/12</span><span class="facts__v">8h às 12h</span></li>
-        <li><span class="facts__k">Onde</span><a class="facts__v facts__link" data-maps href="#" target="_blank" rel="noopener">AD Brás · Sede</a></li>
-      </ul>
-    </main>
 
     <section class="booking" aria-labelledby="form-title">
       <form class="card form" data-form novalidate>
@@ -148,24 +123,13 @@
 
       <div class="card ok" data-ok hidden tabindex="-1" aria-live="polite">
         <div class="ok__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <h2 class="card__title">Tudo certo<span data-ok-nome></span>!</h2>
-        <p class="ok__lead">A sua família está agendada para</p>
+        <h2 class="card__title">Horário marcado!</h2>
+        <p class="ok__lead"><span data-ok-nome></span>sua família está marcada para</p>
         <p class="ok__quando" data-ok-quando></p>
-        <p class="ok__sala" data-ok-sala hidden></p>
-        <p class="ok__onde"><span data-ok-local></span></p>
-        <div class="ok__acoes">
-          <a class="btn btn--ghost" data-ok-gcal href="#" target="_blank" rel="noopener">Google Agenda</a>
-          <a class="btn btn--ghost" data-ok-ics href="#" download="santa-ceia-da-familia.ics">iPhone / Outlook</a>
-        </div>
-        <a class="btn" data-ok-share href="#" target="_blank" rel="noopener">Avisar a família no WhatsApp</a>
-        <button class="link" type="button" data-ok-again>Agendar outra família</button>
+        <p class="ok__aviso">Entraremos em contato em breve para mais informações.</p>
       </div>
     </section>
-
-    <footer class="foot">
-      <span>Para a glória de Deus</span>
-    </footer>
-  </div>
+  </main>
 
   <script src="assets/js/main.js" defer></script>
 </body>
