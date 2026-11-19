@@ -34,22 +34,23 @@
     /* ================= CONFIGURAÇÃO DA SANTA CEIA (edite aqui) =================
        planilhaEndpoint: URL /exec do Apps Script da planilha da agenda (integracoes/santa-ceia.gs).
                          Vazio = o formulário não envia e avisa que o agendamento ainda não abriu.
-       Os horários de cada dia saem de "inicio" e "fim", de 20 em 20 minutos (igual à agenda). */
+       horarios: os horários liberados de cada dia, iguais aos da planilha (célula com "Nome  Tel:").
+                 Com a planilha ligada, o site usa a lista que vem dela: horário liberado ou fechado lá
+                 aparece ou some aqui sozinho. Esta lista só vale enquanto a planilha não responde. */
     window.CEIA = {
       planilhaEndpoint: "",
       duracaoMin: 20,
-      salas: 11,
       evento: "Santa Ceia da Família",
       local: "AD Brás · Sede",
       endereco: "Av. Celso Garcia, 560 · Brás, São Paulo",
       mapsLink: "https://www.google.com/maps/search/?api=1&query=AD+Br%C3%A1s+Av.+Celso+Garcia+560+S%C3%A3o+Paulo",
       siteUrl: "https://elloeterno.com.br/",
       dias: [
-        { data: "2026-12-01", semana: "Terça",  curto: "TER", inicio: "19:00", fim: "22:00" },
-        { data: "2026-12-02", semana: "Quarta", curto: "QUA", inicio: "19:00", fim: "22:00" },
-        { data: "2026-12-03", semana: "Quinta", curto: "QUI", inicio: "19:00", fim: "22:00" },
-        { data: "2026-12-04", semana: "Sexta",  curto: "SEX", inicio: "19:00", fim: "22:00" },
-        { data: "2026-12-05", semana: "Sábado", curto: "SÁB", inicio: "08:00", fim: "12:00" },
+        { data: "2026-12-01", semana: "Terça",  horarios: "19:00 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00" },
+        { data: "2026-12-02", semana: "Quarta", horarios: "19:00 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00" },
+        { data: "2026-12-03", semana: "Quinta", horarios: "19:00 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00" },
+        { data: "2026-12-04", semana: "Sexta",  horarios: "19:00 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00" },
+        { data: "2026-12-05", semana: "Sábado", horarios: "08:00 08:20 08:40 09:00 09:20 09:40 10:00 10:20 10:40 11:00 11:20" },
       ],
     };
   </script>

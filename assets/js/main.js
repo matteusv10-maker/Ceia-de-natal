@@ -14,18 +14,16 @@
   const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 
   const pad = (n) => String(n).padStart(2, "0");
-  const aMin = (h) => { const [a, b] = h.split(":").map(Number); return a * 60 + b; };
-  const aHora = (m) => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
   const rotuloHora = (h) => { const [a, b] = h.split(":"); return `${Number(a)}h${b === "00" ? "" : b}`; };
   const diaMes = (iso) => { const [, m, d] = iso.split("-"); return `${Number(d)}/${Number(m)}`; };
   const diaExtenso = (iso) => { const [, m, d] = iso.split("-"); return `${Number(d)} de ${MESES[Number(m) - 1]}`; };
 
-  // horários de cada dia: do início até o fim, de 20 em 20 minutos (igual à agenda das salas)
-  const DIAS = (C.dias || []).map((d) => {
-    const horarios = [];
-    for (let t = aMin(d.inicio); t + DUR <= aMin(d.fim); t += DUR) horarios.push(aHora(t));
-    return { ...d, horarios };
-  });
+  // horários liberados de cada dia (lista do index.html; com a planilha ligada, vale a lista que vem dela)
+  const DIAS = (C.dias || []).map((d) => ({
+    ...d,
+    horarios: (Array.isArray(d.horarios) ? d.horarios : String(d.horarios || "").split(/[\s,]+/))
+      .filter((h) => /^\d{2}:\d{2}$/.test(h)),
+  }));
 
   const form = $("[data-form]");
   const nome = $("#nome");
@@ -89,7 +87,11 @@
     return r ? r.value : "";
   };
 
-  let lotados = {}; // { "2026-12-01": { "19:20": true } } — vem da planilha
+  // horários liberados na planilha e quantas salas ainda estão livres em cada um:
+  // { "2026-12-01": { "19:00": 10, "19:20": 0, ... } } (0 = lotado; horário que não aparece = fechado)
+  let planilha = null;
+  const horasDoDia = (d) => (planilha ? Object.keys(planilha[d.data] || {}).sort() : d.horarios);
+  const lotado = (d, h) => !!(planilha && planilha[d.data] && planilha[d.data][h] === 0);
 
   // marca o selecionado também por classe (para navegadores sem :has)
   const marcarSelecionados = () => {
@@ -102,28 +104,31 @@
     horasEl.innerHTML = "";
     if (!d) {
       horasTitulo.textContent = "Horário";
+      horasVazio.textContent = "Toque em um dia do calendário para ver os horários.";
       horasVazio.hidden = false;
       horasEl.hidden = true;
       atualizarResumo();
       return;
     }
     horasTitulo.innerHTML = `Horários <small>${d.semana}, ${diaExtenso(d.data)}</small>`;
-    const cheio = lotados[d.data] || {};
-    d.horarios.forEach((h) => {
+    const lista = horasDoDia(d);
+    lista.forEach((h) => {
+      const cheio = lotado(d, h);
       const lab = document.createElement("label");
-      lab.className = `hora${cheio[h] ? " is-cheio" : ""}`;
+      lab.className = `hora${cheio ? " is-cheio" : ""}`;
       const inp = document.createElement("input");
       inp.type = "radio";
       inp.name = "hora";
       inp.value = h;
-      inp.disabled = !!cheio[h];
-      inp.setAttribute("aria-label", `${rotuloHora(h)}${cheio[h] ? ", lotado" : ""}`);
-      if (h === antes && !cheio[h]) inp.checked = true;
+      inp.disabled = cheio;
+      inp.setAttribute("aria-label", `${rotuloHora(h)}${cheio ? ", lotado" : ""}`);
+      if (h === antes && !cheio) inp.checked = true;
       lab.append(inp, document.createTextNode(rotuloHora(h)));
       horasEl.appendChild(lab);
     });
-    horasVazio.hidden = true;
-    horasEl.hidden = false;
+    horasVazio.textContent = lista.length ? "" : "Não há horários liberados neste dia.";
+    horasVazio.hidden = lista.length > 0;
+    horasEl.hidden = !lista.length;
     marcarSelecionados();
     atualizarResumo();
   };
@@ -139,8 +144,8 @@
   const marcarDiasLotados = () => {
     calEl.querySelectorAll('input[name="dia"]').forEach((inp) => {
       const d = DIAS.find((x) => x.data === inp.value);
-      const cheio = lotados[d.data] || {};
-      const tudo = d.horarios.every((h) => cheio[h]);
+      const lista = horasDoDia(d);
+      const tudo = !lista.length || lista.every((h) => lotado(d, h));
       inp.disabled = tudo;
       inp.parentElement.classList.toggle("is-cheio", tudo);
       inp.setAttribute("aria-label", `${d.semana}, ${diaExtenso(d.data)}${tudo ? ", lotado" : ""}`);
@@ -153,7 +158,7 @@
     $("#hora-erro").hidden = true;
     marcarSelecionados();
     renderHoras();
-    lerLotados(false);
+    lerPlanilha(false);
   });
   horasEl.addEventListener("change", () => {
     $("#hora-erro").hidden = true;
@@ -161,10 +166,10 @@
     atualizarResumo();
   });
 
-  // ---------- horários lotados (planilha) ----------
+  // ---------- horários liberados e lotados (planilha) ----------
   let lidoEm = 0;
   let lendo = null;
-  const lerLotados = (forcar) => {
+  const lerPlanilha = (forcar) => {
     if (!endpoint) return Promise.resolve();
     if (!forcar && Date.now() - lidoEm < 45000) return Promise.resolve();
     if (lendo) return lendo;
@@ -175,14 +180,8 @@
         const url = `${endpoint}${endpoint.includes("?") ? "&" : "?"}acao=vagas&t=${Date.now()}`;
         const r = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
         const j = await r.json();
-        if (j && j.ok && j.vagas) {
-          const novo = {};
-          Object.keys(j.vagas).forEach((data) => {
-            Object.keys(j.vagas[data]).forEach((h) => {
-              if (j.vagas[data][h] === 0) (novo[data] = novo[data] || {})[h] = true;
-            });
-          });
-          lotados = novo;
+        if (j && j.ok && j.vagas && typeof j.vagas === "object") {
+          planilha = j.vagas;
           lidoEm = Date.now();
           marcarDiasLotados();
           marcarSelecionados();
@@ -328,13 +327,15 @@
         return;
       }
       if (j.error === "lotado") {
-        (lotados[d.data] = lotados[d.data] || {})[h] = true;
+        if (!planilha) planilha = {};
+        if (!planilha[d.data]) planilha[d.data] = Object.fromEntries(d.horarios.map((x) => [x, 1]));
+        planilha[d.data][h] = 0;
         const inp = horasEl.querySelector(`input[value="${h}"]`);
         if (inp) inp.checked = false;
         marcarDiasLotados();
         renderHoras();
         mostrarStatus(`O horário das ${rotuloHora(h)} acabou de lotar. Escolha outro horário.`);
-        lerLotados(true);
+        lerPlanilha(true);
         const livre = horasEl.querySelector("input:not(:disabled)");
         if (livre) livre.focus();
         return;
@@ -416,9 +417,9 @@
     ok.hidden = true;
     form.hidden = false;
     nome.focus();
-    lerLotados(true);
+    lerPlanilha(true);
   });
 
   renderHoras();
-  lerLotados(true);
+  lerPlanilha(true);
 })();

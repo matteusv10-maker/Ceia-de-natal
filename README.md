@@ -3,11 +3,20 @@
 Site de uma página para as famílias agendarem a **Santa Ceia da Família** na AD Brás (Ello Eterno).
 
 - **Datas:** 1 a 5 de dezembro de 2026.
-- **Horários:** terça a sexta, das 19h às 22h; sábado, das 8h às 12h.
-- **Formulário:** a pessoa informa nome, WhatsApp e quantas pessoas vêm, escolhe o dia numa lista e o horário em outra.
-  - A lista de horários muda conforme o dia: só aparecem os horários daquele dia, de 20 em 20 minutos, igual à agenda das salas.
-  - Cada horário comporta 11 famílias (SALA 01 a SALA 11).
-  - O site não mostra contagem de vagas. Quando um horário lota, ele aparece como "lotado" na lista e não pode ser escolhido.
+- **Horários liberados na planilha:** de 20 em 20 minutos.
+  - Terça a sexta: 19h às 22h. O das 22h só existe nas salas 03 a 11.
+  - Sábado: 8h às 11h20.
+- **Formulário:** a pessoa informa nome, WhatsApp e quantas pessoas vêm e escolhe o dia num calendário de dezembro (1 a 5 em destaque).
+  - Os horários daquele dia aparecem ao lado do calendário.
+  - Uma família por sala em cada horário, com 11 salas (SALA 01 a SALA 11).
+  - O site não mostra contagem de vagas. Um horário lotado aparece riscado e não pode ser escolhido.
+
+**Regra dos horários (segue a planilha):**
+
+- Célula com o modelo "Nome Tel:" = horário liberado naquela sala.
+- Célula vazia = horário fechado naquela sala.
+- O site mostra, em cada dia, só os horários liberados em pelo menos uma sala. Para abrir ou fechar um horário, basta mexer na planilha.
+- A lista `horarios` do `index.html` só vale enquanto a planilha não responde.
 
 O site é estático (HTML, CSS e JS, sem build) e é publicado pelo GitHub Pages a partir da raiz da branch `main`.
 
@@ -28,7 +37,7 @@ Tudo fica no bloco `window.CEIA`, no topo do `index.html`:
 | Campo | O que é |
 |---|---|
 | `planilhaEndpoint` | URL `/exec` do Apps Script da planilha da agenda. Vazio: o formulário não envia e avisa que o agendamento abre em instantes |
-| `dias` | Um item por dia, com data, nome do dia, início e fim. Os horários saem de 20 em 20 minutos dentro desse intervalo |
+| `dias` | Um item por dia, com data, nome do dia e os horários liberados (iguais aos da planilha) |
 | `duracaoMin` | Duração de cada horário (20) |
 | `local`, `endereco`, `mapsLink` | Local mostrado na página, na confirmação e na agenda |
 
@@ -39,7 +48,7 @@ Os agendamentos vão direto para a planilha **ADBRÁS SEDE - AGENDA - SANTA CEIA
 - **Onde grava:** a primeira sala livre daquele dia e horário recebe o nome, as pessoas e o telefone, no mesmo formato da agenda. A célula ganha a nota "Agendado pelo site em ...".
 - **Registro:** a aba **Agendamentos do site** guarda tudo, com um link para abrir a conversa no WhatsApp.
 - **Duas pessoas ao mesmo tempo no último lugar:** a segunda recebe "esse horário acabou de lotar" e escolhe outro.
-- **O que já está na agenda:** as reservas feitas à mão ficam como estão. Uma célula só conta como livre quando está vazia ou só com o modelo "Nome Tel:".
+- **O que já está na agenda:** as reservas feitas à mão ficam como estão. Uma célula só conta como livre quando tem só o modelo "Nome Tel:"; vazia = horário fechado.
 
 Para ligar, uma vez só:
 

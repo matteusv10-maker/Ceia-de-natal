@@ -8,7 +8,14 @@
  *                      no mesmo formato da agenda, e registra tudo na aba "Agendamentos do site".
  *   Uma família por sala em cada horário. Se o horário lotar entre a escolha e o envio, responde "lotado".
  *   A célula preenchida pelo site ganha uma nota "Agendado pelo site em ...".
- *   Uma célula conta como livre quando está vazia ou só com o modelo "Nome  Tel:".
+ *
+ * Quais horários aparecem no site (segue a planilha)
+ * - Célula com o modelo "Nome  Tel:"  = horário LIBERADO e livre naquela sala.
+ * - Célula com nome                   = horário liberado, mas já ocupado naquela sala.
+ * - Célula VAZIA                      = horário FECHADO naquela sala.
+ *   O site mostra, em cada dia, só os horários liberados em pelo menos uma sala. Para abrir um horário,
+ *   escreva "Nome Tel:" na célula; para fechar, apague o conteúdo. Se todas as salas de um horário
+ *   estiverem ocupadas, ele aparece riscado ("lotado").
  *
  * Como ligar (uma vez)
  * 1. Abra a planilha da agenda no Google Planilhas → Extensões → Apps Script.
@@ -27,12 +34,11 @@ const ABA_SALA = /^\s*SALA\s*\d+\s*$/i;
 const LINHA_DATAS = 3;      // C3:F3 (terça a sexta) e H3 (sábado) têm as datas
 const PRIMEIRA_LINHA = 5;   // primeiro horário da grade
 const ULTIMA_LINHA = 17;    // última linha que pode ter horário (a linha 18 é "OBSERVAÇÕES")
-// cada bloco: coluna dos horários, colunas dos dias e o fim do período (o último horário começa 20 min antes)
+// cada bloco: coluna dos horários e colunas dos dias
 const BLOCOS = [
-  { colHora: 2, colsDias: [3, 4, 5, 6], fim: "22:00" },  // B = noite · C a F = terça a sexta
-  { colHora: 7, colsDias: [8], fim: "12:00" },           // G = manhã · H = sábado
+  { colHora: 2, colsDias: [3, 4, 5, 6] },  // B = horários da noite · C a F = terça a sexta
+  { colHora: 7, colsDias: [8] },           // G = horários da manhã · H = sábado
 ];
-const DURACAO_MIN = 20;
 const SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
 function doGet(e) {
@@ -111,7 +117,7 @@ function doPost(e) {
   }
 }
 
-/** Lê todas as salas: quais horários existem em cada dia e quais salas estão livres em cada um. */
+/** Lê todas as salas: quais horários estão liberados em cada dia e quais salas estão livres em cada um. */
 function mapa_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone() || "America/Sao_Paulo";
@@ -130,10 +136,11 @@ function mapa_() {
         const data = Utilities.formatDate(d, tz, "yyyy-MM-dd");
         for (let r = PRIMEIRA_LINHA; r <= ULTIMA_LINHA; r++) {
           const hora = hora_(txt[r - 1][b.colHora - 1]);
-          if (!hora || minutos_(hora) + DURACAO_MIN > minutos_(b.fim)) continue;
+          const celula = txt[r - 1][col - 1];
+          if (!hora || vazia_(celula)) continue;  // célula vazia = horário fechado nesta sala
           const chave = data + "|" + hora;
-          horarios[chave] = true;
-          if (livre_(txt[r - 1][col - 1])) {
+          horarios[chave] = true;                 // liberado (livre ou já ocupado)
+          if (modelo_(celula)) {
             (livres[chave] = livres[chave] || []).push({ sheet: sh, sala: sh.getName().trim(), linha: r, coluna: col });
           }
         }
@@ -153,15 +160,14 @@ function hora_(t) {
   return ("0" + h).slice(-2) + ":" + ("0" + mi).slice(-2);
 }
 
-function minutos_(hhmm) {
-  const p = hhmm.split(":");
-  return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+function vazia_(t) {
+  return String(t || "").trim() === "";
 }
 
-/** livre = vazia ou só o modelo "Nome   Tel:" */
-function livre_(t) {
+/** livre = só o modelo "Nome   Tel:" (horário liberado e ainda sem família) */
+function modelo_(t) {
   const s = String(t || "").replace(/\s+/g, " ").trim().toLowerCase();
-  return s === "" || /^nome\s*:?\s*(tel(efone)?\s*:?)?$/.test(s);
+  return /^nome\s*:?\s*(tel(efone)?\s*:?)?$/.test(s);
 }
 
 function numeroSala_(nome) {
