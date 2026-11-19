@@ -6,8 +6,7 @@ A página tem a barra preta com o logo Ello | AD Brás, o banner da campanha (ho
 
 No computador tudo cabe numa dobra só, sem cortar o banner:
 - O banner largo fica ancorado à esquerda e mostra a arte inteira, do cabelo ao "1 a 5 de dezembro".
-- Em telas baixas (notebook, até 820px de altura), a agenda fica compacta: nome, WhatsApp e pessoas numa linha só.
-- Abaixo de 560px de altura, a agenda inteira diminui na mesma proporção.
+- Em telas baixas (notebook, abaixo de ~785px de altura), a agenda mantém o mesmo desenho e espaçamento e diminui por inteiro (zoom), o quanto precisar para caber.
 
 - **Datas:** 1 a 5 de dezembro de 2026.
 - **Horários liberados na planilha:** de 20 em 20 minutos.
