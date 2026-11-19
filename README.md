@@ -4,10 +4,10 @@ Site de uma página para as famílias agendarem a **Santa Ceia da Família** na 
 
 - **Datas:** 1 a 5 de dezembro de 2026.
 - **Horários:** terça a sexta, das 19h às 22h; sábado, das 8h às 12h.
-- **Formulário:** a pessoa informa nome, WhatsApp e quantas pessoas vêm, escolhe o dia e depois o horário.
-  - Cada dia mostra só os seus horários, de 20 em 20 minutos, igual à agenda das salas.
+- **Formulário:** a pessoa informa nome, WhatsApp e quantas pessoas vêm, escolhe o dia numa lista e o horário em outra.
+  - A lista de horários muda conforme o dia: só aparecem os horários daquele dia, de 20 em 20 minutos, igual à agenda das salas.
   - Cada horário comporta 11 famílias (SALA 01 a SALA 11).
-  - O site mostra quantas vagas restam e trava os horários lotados.
+  - O site não mostra contagem de vagas. Quando um horário lota, ele aparece como "lotado" na lista e não pode ser escolhido.
 
 O site é estático (HTML, CSS e JS, sem build) e é publicado pelo GitHub Pages a partir da raiz da branch `main`.
 

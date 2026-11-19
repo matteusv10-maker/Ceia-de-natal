@@ -1,7 +1,7 @@
 /* Santa Ceia da Família · agendamento (elloeterno.com.br)
-   - monta os dias e os horários de cada dia (de 20 em 20 minutos) a partir de window.CEIA (topo do index.html)
-   - mostra quantas salas ainda estão livres em cada horário (lidas da planilha da agenda) e trava os lotados
-   - envia o agendamento para a planilha (Apps Script) e mostra a confirmação com a sala */
+   - lista de dias e, conforme o dia escolhido, a lista de horários (de 20 em 20 minutos) a partir de window.CEIA
+   - envia o agendamento para a planilha da agenda (Apps Script) e mostra a confirmação com a sala
+   - horário que já lotou na planilha (11 famílias) aparece como "lotado" e não pode ser escolhido */
 (() => {
   "use strict";
 
@@ -16,7 +16,6 @@
   const aHora = (m) => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
   const rotuloHora = (h) => { const [a, b] = h.split(":"); return `${Number(a)}h${b === "00" ? "" : b}`; };
   const diaMes = (iso) => { const [, m, d] = iso.split("-"); return `${Number(d)}/${Number(m)}`; };
-  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   // horários de cada dia: do início até o fim, de 20 em 20 minutos (igual à agenda das salas)
   const DIAS = (C.dias || []).map((d) => {
@@ -29,10 +28,8 @@
   const nome = $("#nome");
   const whats = $("#whats");
   const pessoas = $("#pessoas");
-  const daysEl = $("[data-days]");
-  const timesWrap = $("[data-times-wrap]");
-  const timesEl = $("[data-times]");
-  const timesHint = $("[data-times-hint]");
+  const selDia = $("#dia");
+  const selHora = $("#hora");
   const statusEl = $("[data-status]");
   const submitBtn = $("[data-submit]");
   const submitLabel = $("[data-submit-label]");
@@ -45,35 +42,66 @@
     if (C.local) maps.textContent = C.local;
   }
 
-  // ---------- dias ----------
-  DIAS.forEach((d) => {
-    const lab = document.createElement("label");
-    lab.className = "chip day";
-    lab.innerHTML =
-      `<input type="radio" name="dia" value="${esc(d.data)}" aria-label="${esc(d.semana)}, ${diaMes(d.data)}">` +
-      `<span class="chip__box"><span class="chip__a">${esc(d.curto)}</span><span class="chip__b">${diaMes(d.data)}</span></span>`;
-    daysEl.appendChild(lab);
+  const opcao = (valor, texto, desativada) => {
+    const o = document.createElement("option");
+    o.value = valor;
+    o.textContent = texto;
+    if (desativada) o.disabled = true;
+    return o;
+  };
+
+  // ---------- listas ----------
+  DIAS.forEach((d) => selDia.appendChild(opcao(d.data, `${d.semana}, ${diaMes(d.data)}`)));
+
+  const diaAtual = () => DIAS.find((d) => d.data === selDia.value) || null;
+
+  let lotados = {}; // { "2026-12-01": { "19:20": true } } — vem da planilha
+
+  const preencherHorarios = () => {
+    const d = diaAtual();
+    const antes = selHora.value;
+    selHora.innerHTML = "";
+    if (!d) {
+      selHora.appendChild(opcao("", "Escolha", true));
+      selHora.value = "";
+      selHora.disabled = true;
+      return;
+    }
+    selHora.appendChild(opcao("", "Escolha", true));
+    const cheio = lotados[d.data] || {};
+    d.horarios.forEach((h) => selHora.appendChild(opcao(h, cheio[h] ? `${rotuloHora(h)} · lotado` : rotuloHora(h), !!cheio[h])));
+    selHora.disabled = false;
+    selHora.value = antes && d.horarios.includes(antes) && !cheio[antes] ? antes : "";
+  };
+
+  const marcarDiasLotados = () => {
+    [...selDia.options].forEach((o) => {
+      const d = DIAS.find((x) => x.data === o.value);
+      if (!d) return;
+      const cheio = lotados[d.data] || {};
+      const tudo = d.horarios.every((h) => cheio[h]);
+      o.disabled = tudo;
+      o.textContent = `${d.semana}, ${diaMes(d.data)}${tudo ? " · lotado" : ""}`;
+    });
+    if (selDia.selectedOptions[0] && selDia.selectedOptions[0].disabled && selDia.value) selDia.value = "";
+  };
+
+  selDia.addEventListener("change", () => {
+    marcar(selDia, $("#dia-erro"), false);
+    marcar(selHora, $("#hora-erro"), false);
+    preencherHorarios();
+    lerLotados(false);
   });
+  selHora.addEventListener("change", () => marcar(selHora, $("#hora-erro"), false));
 
-  const diaAtual = () => {
-    const r = form.querySelector('input[name="dia"]:checked');
-    return r ? DIAS.find((d) => d.data === r.value) : null;
-  };
-  const horaAtual = () => {
-    const r = form.querySelector('input[name="hora"]:checked');
-    return r ? r.value : "";
-  };
-
-  // ---------- vagas (planilha) ----------
-  let vagas = null;
-  let vagasEm = 0;
-  let buscando = null;
-
-  const carregarVagas = (forcar) => {
+  // ---------- horários lotados (planilha) ----------
+  let lidoEm = 0;
+  let lendo = null;
+  const lerLotados = (forcar) => {
     if (!endpoint) return Promise.resolve();
-    if (!forcar && vagas && Date.now() - vagasEm < 45000) return Promise.resolve();
-    if (buscando) return buscando;
-    buscando = (async () => {
+    if (!forcar && Date.now() - lidoEm < 45000) return Promise.resolve();
+    if (lendo) return lendo;
+    lendo = (async () => {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 15000);
       try {
@@ -81,71 +109,26 @@
         const r = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
         const j = await r.json();
         if (j && j.ok && j.vagas) {
-          vagas = j.vagas;
-          vagasEm = Date.now();
-          atualizarDias();
-          renderHorarios();
+          const novo = {};
+          Object.keys(j.vagas).forEach((data) => {
+            Object.keys(j.vagas[data]).forEach((h) => {
+              if (j.vagas[data][h] === 0) (novo[data] = novo[data] || {})[h] = true;
+            });
+          });
+          lotados = novo;
+          lidoEm = Date.now();
+          marcarDiasLotados();
+          preencherHorarios();
         }
       } catch (_) {
-        /* sem as vagas a página continua funcionando: a planilha confere a vaga no envio */
+        /* sem a leitura a página continua funcionando: a planilha confere a vaga no envio */
       } finally {
         clearTimeout(t);
-        buscando = null;
+        lendo = null;
       }
     })();
-    return buscando;
+    return lendo;
   };
-
-  const livresNoDia = (d) => {
-    const v = vagas && vagas[d.data];
-    if (!v) return null;
-    return d.horarios.reduce((s, h) => s + (typeof v[h] === "number" ? v[h] : 0), 0);
-  };
-
-  const atualizarDias = () => {
-    daysEl.querySelectorAll('input[name="dia"]').forEach((inp) => {
-      const d = DIAS.find((x) => x.data === inp.value);
-      const total = livresNoDia(d);
-      const lotado = total === 0;
-      inp.disabled = lotado;
-      if (lotado && inp.checked) inp.checked = false;
-      const b = inp.parentElement.querySelector(".chip__b");
-      b.textContent = lotado ? "lotado" : diaMes(d.data);
-      inp.setAttribute("aria-label", `${d.semana}, ${diaMes(d.data)}${lotado ? ", lotado" : ""}`);
-    });
-  };
-
-  // ---------- horários do dia escolhido ----------
-  const renderHorarios = () => {
-    const d = diaAtual();
-    if (!d) { timesWrap.hidden = true; return; }
-    const v = vagas && vagas[d.data];
-    const escolhido = horaAtual();
-    timesHint.textContent = `· ${d.semana.toLowerCase()}, ${diaMes(d.data)}`;
-    timesEl.classList.toggle("times--sem-vagas", !v);
-    timesEl.innerHTML = "";
-    d.horarios.forEach((h) => {
-      const livres = v && typeof v[h] === "number" ? v[h] : null;
-      const lotado = livres === 0;
-      const sub = livres === null ? "" : lotado ? "lotado" : `${livres} ${livres === 1 ? "vaga" : "vagas"}`;
-      const lab = document.createElement("label");
-      lab.className = "chip time";
-      lab.innerHTML =
-        `<input type="radio" name="hora" value="${h}"${lotado ? " disabled" : ""} aria-label="${rotuloHora(h)}${sub ? `, ${sub}` : ""}">` +
-        `<span class="chip__box"><span class="chip__a">${rotuloHora(h)}</span>${sub ? `<span class="chip__b">${sub}</span>` : ""}</span>`;
-      if (h === escolhido && !lotado) lab.querySelector("input").checked = true;
-      timesEl.appendChild(lab);
-    });
-    timesWrap.hidden = false;
-  };
-
-  daysEl.addEventListener("change", () => {
-    $("#dia-erro").hidden = true;
-    $("#hora-erro").hidden = true;
-    renderHorarios();
-    carregarVagas(false);
-  });
-  timesEl.addEventListener("change", () => { $("#hora-erro").hidden = true; });
 
   // ---------- campos ----------
   whats.addEventListener("input", () => {
@@ -161,10 +144,10 @@
     whats.value = out;
   });
 
-  const marcar = (el, errEl, ruim) => {
+  function marcar(el, errEl, ruim) {
     el.setAttribute("aria-invalid", ruim ? "true" : "false");
     errEl.hidden = !ruim;
-  };
+  }
   [[nome, "#nome-erro"], [whats, "#whats-erro"], [pessoas, "#pessoas-erro"]].forEach(([el, sel]) => {
     el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => {
       if (el.getAttribute("aria-invalid") === "true") marcar(el, $(sel), false);
@@ -187,15 +170,13 @@
     marcar(pessoas, $("#pessoas-erro"), pRuim);
     if (pRuim) erros.push(pessoas);
 
-    const d = diaAtual();
-    $("#dia-erro").hidden = !!d;
-    if (!d) erros.push(daysEl.querySelector("input:not(:disabled)") || daysEl);
+    const diaRuim = !diaAtual();
+    marcar(selDia, $("#dia-erro"), diaRuim);
+    if (diaRuim) erros.push(selDia);
 
-    if (d) {
-      const h = horaAtual();
-      $("#hora-erro").hidden = !!h;
-      if (!h) erros.push(timesEl.querySelector("input:not(:disabled)") || timesEl);
-    }
+    const horaRuim = !diaRuim && !selHora.value;
+    marcar(selHora, $("#hora-erro"), horaRuim);
+    if (horaRuim) erros.push(selHora);
     return erros;
   };
 
@@ -236,7 +217,7 @@
     if (erros.length) { erros[0].focus(); return; }
 
     const d = diaAtual();
-    const h = horaAtual();
+    const h = selHora.value;
     const primeiroNome = nome.value.trim().split(/\s+/)[0];
     if (form.site.value) { mostrarOk({ primeiroNome, data: d.data, hora: h, sala: "" }); return; } // robô
 
@@ -274,14 +255,15 @@
       if (j.ok) {
         mostrarOk({ primeiroNome, data: j.data || d.data, hora: j.hora || h, sala: j.sala || "" });
         idEnvio = novoId();
-        if (vagas && vagas[d.data] && typeof vagas[d.data][h] === "number" && !j.repetido) vagas[d.data][h] = Math.max(0, vagas[d.data][h] - 1);
         return;
       }
       if (j.error === "lotado") {
+        (lotados[d.data] = lotados[d.data] || {})[h] = true;
+        preencherHorarios();
+        marcarDiasLotados();
         mostrarStatus(`O horário das ${rotuloHora(h)} acabou de lotar. Escolha outro horário.`);
-        await carregarVagas(true);
-        const livre = timesEl.querySelector("input:not(:disabled)");
-        if (livre) livre.focus();
+        lerLotados(true);
+        selHora.focus();
         return;
       }
       if (j.error === "dados" || j.error === "horario") {
@@ -300,7 +282,7 @@
   // ---------- confirmação ----------
   const z = (dt) => dt.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
-  const mostrarOk = ({ primeiroNome, data, hora, sala }) => {
+  function mostrarOk({ primeiroNome, data, hora, sala }) {
     const d = DIAS.find((x) => x.data === data) || diaAtual();
     const ini = new Date(`${data}T${hora}:00-03:00`);
     const fim = new Date(ini.getTime() + DUR * 60000);
@@ -350,19 +332,19 @@
     ok.hidden = false;
     ok.focus({ preventScroll: true });
     ok.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
-  };
+  }
 
   $("[data-ok-again]").addEventListener("click", () => {
     form.reset();
-    [nome, whats, pessoas].forEach((el) => el.setAttribute("aria-invalid", "false"));
-    timesWrap.hidden = true;
-    timesEl.innerHTML = "";
+    [nome, whats, pessoas, selDia, selHora].forEach((el) => el.setAttribute("aria-invalid", "false"));
+    preencherHorarios();
     statusEl.hidden = true;
     ok.hidden = true;
     form.hidden = false;
     nome.focus();
-    carregarVagas(true);
+    lerLotados(true);
   });
 
-  carregarVagas(true);
+  preencherHorarios();
+  lerLotados(true);
 })();

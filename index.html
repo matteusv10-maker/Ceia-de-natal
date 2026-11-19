@@ -115,17 +115,22 @@
           </div>
         </div>
 
-        <fieldset class="group" aria-describedby="dia-erro">
-          <legend>Dia</legend>
-          <div class="days" data-days></div>
-          <p class="field__err" id="dia-erro" hidden>Escolha o dia.</p>
-        </fieldset>
-
-        <fieldset class="group group--times" data-times-wrap hidden aria-describedby="hora-erro">
-          <legend>Horário <span class="legend__hint" data-times-hint></span></legend>
-          <div class="times" data-times></div>
-          <p class="field__err" id="hora-erro" hidden>Escolha o horário.</p>
-        </fieldset>
+        <div class="row row--quando">
+          <div class="field">
+            <label for="dia">Dia</label>
+            <select id="dia" name="dia" required aria-describedby="dia-erro">
+              <option value="" selected disabled>Escolha o dia</option>
+            </select>
+            <p class="field__err" id="dia-erro" hidden>Escolha o dia.</p>
+          </div>
+          <div class="field">
+            <label for="hora">Horário</label>
+            <select id="hora" name="hora" required disabled aria-describedby="hora-erro">
+              <option value="" selected disabled>Escolha</option>
+            </select>
+            <p class="field__err" id="hora-erro" hidden>Escolha o horário.</p>
+          </div>
+        </div>
 
         <div class="hp" aria-hidden="true">
           <label for="site">Não preencha</label>
