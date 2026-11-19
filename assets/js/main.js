@@ -145,17 +145,26 @@
     });
   };
 
+  // no celular, o próximo passo aparece abaixo da dobra: traz para a tela (Modelo Fogg: gatilho visível)
+  const mostrarSeEscondido = (el) => {
+    if (!el || window.innerWidth >= 1100) return;
+    const r = el.getBoundingClientRect();
+    if (r.top < 0 || r.bottom > window.innerHeight) el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+  };
+
   calEl.addEventListener("change", () => {
     $("#dia-erro").hidden = true;
     $("#hora-erro").hidden = true;
     marcarSelecionados();
     renderHoras();
     lerPlanilha(false);
+    mostrarSeEscondido($(".horas"));
   });
   horasEl.addEventListener("change", () => {
     $("#hora-erro").hidden = true;
     marcarSelecionados();
     atualizarResumo();
+    mostrarSeEscondido(submitBtn);
   });
 
   // ---------- horários liberados e lotados (planilha) ----------
