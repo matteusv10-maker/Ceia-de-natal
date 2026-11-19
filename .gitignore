@@ -1,0 +1,4 @@
+# configurações locais do editor/IA
+.claude/
+Thumbs.db
+.DS_Store
