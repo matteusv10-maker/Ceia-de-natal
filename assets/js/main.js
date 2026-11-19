@@ -1,8 +1,8 @@
 /* Santa Ceia com a Família · agendamento (elloeterno.com.br)
    - calendário do mês com os dias do evento destacados; ao tocar no dia aparecem os horários daquele dia
-     (os liberados na planilha da agenda; enquanto ela não responde, a lista do topo do index.html)
+     (lista do topo do index.html, igual à da agenda)
    - envia o agendamento para a planilha (Apps Script) e confirma: "entraremos em contato em breve"
-   - horário que já lotou na planilha (todas as salas ocupadas) aparece riscado e não pode ser escolhido */
+   - horário que chegou ao limite de famílias (uma por sala) aparece riscado e não pode ser escolhido */
 (() => {
   "use strict";
 
@@ -17,7 +17,7 @@
   const diaMes = (iso) => { const [, m, d] = iso.split("-"); return `${Number(d)}/${Number(m)}`; };
   const diaExtenso = (iso) => { const [, m, d] = iso.split("-"); return `${Number(d)} de ${MESES[Number(m) - 1]}`; };
 
-  // horários liberados de cada dia (lista do index.html; com a planilha ligada, vale a lista que vem dela)
+  // horários de cada dia (lista do topo do index.html)
   const DIAS = (C.dias || []).map((d) => ({
     ...d,
     horarios: (Array.isArray(d.horarios) ? d.horarios : String(d.horarios || "").split(/[\s,]+/))
@@ -79,11 +79,12 @@
     return r ? r.value : "";
   };
 
-  // horários liberados na planilha e quantas salas ainda estão livres em cada um:
-  // { "2026-12-01": { "19:00": 10, "19:20": 0, ... } } (0 = lotado; horário que não aparece = fechado)
-  let planilha = null;
-  const horasDoDia = (d) => (planilha ? Object.keys(planilha[d.data] || {}).sort() : d.horarios);
-  const lotado = (d, h) => !!(planilha && planilha[d.data] && planilha[d.data][h] === 0);
+  // quantas famílias já marcaram cada horário (vem da planilha) e o limite por horário (uma família por sala)
+  // ocupados: { "2026-12-01": { "19:00": 3 } } · horário com ocupados >= limite aparece riscado
+  let ocupados = null;
+  let limite = 0;
+  const horasDoDia = (d) => d.horarios;
+  const lotado = (d, h) => !!(ocupados && limite && ((ocupados[d.data] || {})[h] || 0) >= limite);
 
   // marca o selecionado também por classe (para navegadores sem :has)
   const marcarSelecionados = () => {
@@ -181,8 +182,9 @@
         const url = `${endpoint}${endpoint.includes("?") ? "&" : "?"}acao=vagas&t=${Date.now()}`;
         const r = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
         const j = await r.json();
-        if (j && j.ok && j.vagas && typeof j.vagas === "object") {
-          planilha = j.vagas;
+        if (j && j.ok && j.ocupados && typeof j.ocupados === "object") {
+          ocupados = j.ocupados;
+          limite = Number(j.limite) || 0;
           lidoEm = Date.now();
           marcarDiasLotados();
           marcarSelecionados();
@@ -328,9 +330,9 @@
         return;
       }
       if (j.error === "lotado") {
-        if (!planilha) planilha = {};
-        if (!planilha[d.data]) planilha[d.data] = Object.fromEntries(d.horarios.map((x) => [x, 1]));
-        planilha[d.data][h] = 0;
+        if (!ocupados) ocupados = {};
+        if (!limite) limite = 9999;
+        (ocupados[d.data] = ocupados[d.data] || {})[h] = limite;
         const inp = horasEl.querySelector(`input[value="${h}"]`);
         if (inp) inp.checked = false;
         marcarDiasLotados();

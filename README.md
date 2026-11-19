@@ -10,27 +10,10 @@ A página tem a barra preta com o logo Ello | AD Brás, o banner da campanha (ho
   - Sábado: 8h às 11h20.
 - **Formulário:** a pessoa informa nome, WhatsApp e quantas pessoas vêm e escolhe o dia num calendário de dezembro (1 a 5 em destaque).
   - Os horários daquele dia aparecem ao lado do calendário.
-  - Uma família por sala em cada horário, com 11 salas (SALA 01 a SALA 11).
+  - Até 11 famílias por horário (uma por sala da agenda).
   - O site não mostra contagem de vagas. Um horário lotado aparece riscado e não pode ser escolhido.
 
-**Regra dos horários (segue a planilha):**
-
-- Célula com o modelo "Nome Tel:" = horário liberado naquela sala.
-- Célula vazia = horário fechado naquela sala.
-- O site mostra, em cada dia, só os horários liberados em pelo menos uma sala. Para abrir ou fechar um horário, basta mexer na planilha.
-- A lista `horarios` do `index.html` só vale enquanto a planilha não responde.
-
-O site é estático (HTML, CSS e JS, sem build) e é publicado pelo GitHub Pages a partir da raiz da branch `main`.
-
-```
-index.html                  página + CONFIGURAÇÃO (window.CEIA, no topo do arquivo)
-assets/css/style.css        visual (barra preta, banner e cartão da agenda)
-assets/js/main.js           calendário, horários, envio e confirmação
-assets/img/                 banners (computador e celular), logo, ícones e imagem de compartilhamento
-assets/fonts/               Anton e Raleway (licença OFL)
-integracoes/santa-ceia.gs   Apps Script da planilha dos resultados (recebe os agendamentos)
-CNAME                       domínio elloeterno.com.br
-```
+**Horários:** a lista `horarios` do `index.html` (e a lista `HORARIOS` do Apps Script, que confere o envio). Cada horário aceita até 11 famílias (`LIMITE` no Apps Script, uma por sala); quando lota, aparece riscado no site.
 
 ## 1. Configuração
 
@@ -38,27 +21,25 @@ Tudo fica no bloco `window.CEIA`, no topo do `index.html`:
 
 | Campo | O que é |
 |---|---|
-| `planilhaEndpoint` | URL `/exec` do Apps Script da planilha da agenda. Vazio: o formulário não envia e avisa que o agendamento abre em instantes |
+| `planilhaEndpoint` | URL `/exec` do Apps Script da planilha **Ceia - Natal 2026** (já preenchida). Vazio: o formulário não envia e avisa que o agendamento abre em instantes |
 | `dias` | Um item por dia, com data, nome do dia e os horários liberados (iguais aos da planilha) |
 
 ## 2. Planilha dos resultados (Apps Script)
 
 Os agendamentos vão para a planilha **Ceia - Natal 2026**: https://docs.google.com/spreadsheets/d/1hIeWo5zZPacSsMYuxGCj9LpRy6RbJsFIrjsrriclG1c
 
-Ela espelha a agenda oficial (**ADBRÁS SEDE - AGENDA - SANTA CEIA DA FAMÍLIA**), no visual do Ello:
+A planilha tem uma aba só, **Agendamentos**, no visual do Ello e em ordem de dia e horário. Colunas:
 
-- **Agendamentos:** a lista de tudo, em ordem de dia e horário, com sala, nome, pessoas, WhatsApp (link "Abrir conversa") e o **texto pronto para colar na agenda**.
-- **SALA 01 a SALA 11:** as mesmas linhas e colunas da agenda.
-  - O site grava cada família na primeira sala livre do dia e horário, no formato da agenda ("Nome  - 2 Pessoas … Tel: 11 91234-5678").
-  - A célula preenchida pelo site fica laranja clara e ganha a nota "Agendado pelo site em ...".
-  - As 9 reservas que já estavam na agenda foram copiadas para cá.
+- **Na agenda?:** caixa para marcar quando a família já foi passada para a agenda oficial; a linha fica verde.
+- **Dia, Horário, Nome, Pessoas, WhatsApp** e **Conversar**, este último com o link "Abrir conversa".
+- **Texto para colar na agenda:** no formato das células da agenda ("Nome  - 2 Pessoas … Tel: 11 91234-5678").
+- **Agendado em** e **Origem**, esta última vinda de `?ref=` no link.
 
-**Para passar para a agenda oficial:** copie o intervalo `C5:H16` de uma sala e cole no mesmo lugar da sala correspondente na agenda com **Ctrl+Shift+V** (só os valores, sem trazer as cores).
+**Para passar para a agenda oficial:** copie o "Texto para colar na agenda", cole na sala livre daquele dia e horário e marque **Na agenda?**.
 
-- Como as reservas antigas também estão aqui, colar o intervalo não apaga nenhuma delas.
-- Reserva feita à mão daqui para frente: faça também nesta planilha, senão a próxima colagem apaga.
+O script já está ligado: projeto **Santa Ceia - agendamentos do site** (Extensões → Apps Script na planilha), implantado como App da Web, executando como a conta dona da planilha e aberto a qualquer pessoa.
 
-Para ligar o script, uma vez só:
+Para ligar de novo do zero (outra planilha, por exemplo):
 
 1. Abra a planilha **Ceia - Natal 2026** → **Extensões → Apps Script**.
 2. Apague o código de exemplo, cole o conteúdo de `integracoes/santa-ceia.gs` e salve.
@@ -67,9 +48,7 @@ Para ligar o script, uma vez só:
    - Quem pode acessar: **Qualquer pessoa**
    - Clique em **Implantar** e autorize com a sua conta Google.
 4. Copie a URL que termina em `/exec` e cole em `planilhaEndpoint`, no `index.html`.
-5. Teste: abra a URL `/exec` no navegador. Deve aparecer `{"ok":true,"salas":11,"vagas":{...}}`.
-
-Para conferir o que o script enxerga, rode a função `testarLeitura` no editor (Executar) e veja o registro.
+5. Teste: abra a URL `/exec` no navegador. Deve aparecer `{"ok":true,"limite":11,"ocupados":{...}}`.
 
 Se alterar o script: **Implantar → Gerenciar implantações →** lápis → **Versão: Nova versão → Implantar**. A URL continua a mesma.
 
