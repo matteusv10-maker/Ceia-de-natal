@@ -40,7 +40,7 @@ A planilha tem uma aba só, **Agendamentos**, no visual do Ello e em ordem de di
 - **Na agenda?:** caixa para marcar quando a família já foi passada para a agenda oficial; a linha fica verde.
 - **Dia, Horário, Nome, Pessoas, WhatsApp** e **Conversar**, este último com o link "Abrir conversa".
 - **Texto para colar na agenda:** no formato das células da agenda ("Nome  - 2 Pessoas … Tel: 11 91234-5678").
-- **Agendado em** e **Origem**, esta última vinda de `?ref=` no link.
+- **Agendado em**, **Chave** e **ID**: colunas ocultas. Servem para ordenar a lista, contar as famílias de cada horário e barrar agendamento repetido (mesmo WhatsApp no mesmo horário).
 
 **Para passar para a agenda oficial:** copie o "Texto para colar na agenda", cole na sala livre daquele dia e horário e marque **Na agenda?**.
 

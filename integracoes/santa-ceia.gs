@@ -34,7 +34,8 @@ const HORARIOS = {
   "2026-12-05": ["08:00", "08:20", "08:40", "09:00", "09:20", "09:40", "10:00", "10:20", "10:40", "11:00", "11:20"],
 };
 const SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-const CAB = ["Na agenda?", "Dia", "Horário", "Nome", "Pessoas", "WhatsApp", "Conversar", "Texto para colar na agenda", "Agendado em", "Origem", "Chave", "ID"];
+// "Agendado em", "Chave" e "ID" ficam ocultas na planilha (servem para ordenar e conferir)
+const CAB = ["Na agenda?", "Dia", "Horário", "Nome", "Pessoas", "WhatsApp", "Conversar", "Texto para colar na agenda", "Agendado em", "Chave", "ID"];
 const COL = Object.fromEntries(CAB.map((h, i) => [h, i + 1]));
 
 function doGet(e) {
@@ -78,19 +79,17 @@ function doPost(e) {
     const sh = aba_();
     const chave = data + " " + hora;
     const linhas = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, CAB.length).getValues() : [];
-    const tel = formatarTel_(zap);
-    if (linhas.some((l) => String(l[COL["WhatsApp"] - 1]) === tel && String(l[COL["Chave"] - 1]) === chave)) {
+    if (linhas.some((l) => digitos_(l[COL["WhatsApp"] - 1]).slice(-11) === zap && chaveTexto_(l[COL["Chave"] - 1]) === chave)) {
       return json_({ ok: true, data: data, hora: hora, repetido: true });
     }
-    const ja = linhas.filter((l) => String(l[COL["Chave"] - 1]) === chave).length;
+    const ja = linhas.filter((l) => chaveTexto_(l[COL["Chave"] - 1]) === chave).length;
     if (ja >= LIMITE) return json_({ ok: false, error: "lotado" });
 
     const res = { ok: true, data: data, hora: hora };
     if (p.teste) {
       res.teste = true; // teste de ligação: não grava nada
     } else {
-      registrar_(sh, { nome: nome, zap: zap, pessoas: pessoas, data: data, hora: hora,
-        origem: limpar_(p.origem, 80), id: String(p.id || "").slice(0, 60) });
+      registrar_(sh, { nome: nome, zap: zap, pessoas: pessoas, data: data, hora: hora, id: String(p.id || "").slice(0, 60) });
       SpreadsheetApp.flush();
       cache.remove("ocupados");
     }
@@ -109,12 +108,25 @@ function contar_() {
   const out = {};
   if (sh.getLastRow() < 2) return out;
   sh.getRange(2, COL["Chave"], sh.getLastRow() - 1, 1).getValues().forEach(([k]) => {
-    const m = String(k).match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})$/);
+    const m = chaveTexto_(k).match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})$/);
     if (!m) return;
     out[m[1]] = out[m[1]] || {};
     out[m[1]][m[2]] = (out[m[1]][m[2]] || 0) + 1;
   });
   return out;
+}
+
+/** Chave "AAAA-MM-DD HH:MM". A planilha transforma esse texto em data e hora; aqui ele volta a ser texto. */
+function chaveTexto_(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, fuso_(), "yyyy-MM-dd HH:mm");
+  return String(v || "").trim();
+}
+let fusoCache_ = "";
+function fuso_() {
+  return fusoCache_ || (fusoCache_ = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone());
+}
+function digitos_(v) {
+  return String(v || "").replace(/\D/g, "");
 }
 
 /** Mesmo formato das células da agenda: "Nome  - 2 Pessoas      Tel: 11 91234-5678" */
@@ -130,7 +142,7 @@ function aba_() {
     sh.getRange(1, 1, 1, CAB.length).setValues([CAB]).setFontWeight("bold")
       .setBackground("#000000").setFontColor("#FF8B01").setHorizontalAlignment("center");
     sh.setFrozenRows(1);
-    sh.hideColumns(COL["Chave"], 2);
+    sh.hideColumns(COL["Agendado em"], 3);
   }
   return sh;
 }
@@ -140,8 +152,9 @@ function registrar_(sh, a) {
   const d = new Date(a.data + "T12:00:00-03:00");
   const dia = SEMANA[d.getUTCDay()] + ", " + a.data.slice(8, 10) + "/" + a.data.slice(5, 7);
   const hora = a.hora.slice(0, 2).replace(/^0/, "") + "h" + (a.hora.slice(3) === "00" ? "" : a.hora.slice(3));
+  // o apóstrofo guarda a chave como texto (sem ele, a planilha vira data e a contagem por horário falha)
   const linha = [false, dia, hora, a.nome, a.pessoas, formatarTel_(a.zap), "", textoAgenda_(a.nome, a.pessoas, a.zap),
-    new Date(), a.origem, a.data + " " + a.hora, a.id];
+    new Date(), "'" + a.data + " " + a.hora, a.id];
   sh.appendRow(linha);
   const r = sh.getLastRow();
   sh.getRange(r, COL["Na agenda?"]).insertCheckboxes();
